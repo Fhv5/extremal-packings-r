@@ -1,0 +1,1578 @@
+\documentclass[12pt,letterpaper]{article}
+
+% Paquetes básicos
+\usepackage[utf8]{inputenc}
+\usepackage[spanish]{babel}
+\usepackage[letterpaper,margin=1in]{geometry}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{amssymb}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\definecolor{pastelgreen}{rgb}{0.47, 0.87, 0.47} % Define pastelgreen color
+\usepackage{tikz}
+\usetikzlibrary{babel}       
+\usetikzlibrary{arrows.meta, calc}  
+
+\newtheorem{theorem}{Teorema}
+
+% Información del documento
+\title{Perímetros extremos en empaquetamientos de discos congruentes}
+\author{Fabián Henry Vilaxa}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+    Mi investigación está enmarcada en el problema del perímetro minimo de la envolvente
+    convexa de empaquetamientos de discos congruentes. Concretamente, busco resolver el siguiente problema:
+    Dado un grafo de contacto conexo de discos congruentes en el plano, 
+    determinar si dicho grafo constituye un punto crítico del perímetro de la envolvente convexa de su clase de contacto.
+    De ser así, indicar si corresponde a un mínimo o máximo. En este documento describo y fundamento los elementos esenciales
+    del procedimiento basado en el cálculo variacional que propongo para resolver este problema.
+\end{abstract}
+
+\section{El problema del perímetro de la envolvente convexa}
+
+El problema central que motiva esta investigación es bastante visual. Supongamos que tenemos un montón de discos 
+del mismo radio sobre una mesa y les ponemos una banda elástica alrededor. Lo que nos interesa es encontrar la disposición 
+(o configuración) de estos discos que hace que esa banda elástica tenga la menor longitud posible. Es decir, 
+buscamos minimizar el perímetro de la envolvente convexa de los discos.
+
+En lugar de intentar buscar la mejor configuración entre las infinitas posibilidades (lo cual es computacionalmente infactible), nos enfocamos
+en un problema distinto, pero en la misma línea.
+
+No buscaremos el mínimo global directamente. En su lugar, tomaremos un grafo de contacto específico (una "forma" de conectar los discos) 
+y utilizaremos herramientas de cálculo variacional para responder dos preguntas fundamentales sobre él:
+\begin{enumerate}
+    \item \textbf{Criticidad:} Si posicionamos los discos de una forma específica, ¿Será que esa dispoción entrega un punto crítico del perímetro? (Primera Variación).
+    \item \textbf{Estabilidad:} Si es así, ¿Qué clase de estabilidad tiene ese punto crítico? (Segunda Variación).
+\end{enumerate}
+
+\section{Preliminares}
+\subsection{Representación de empaquetamientos}
+Los empaquetamientos los representamos mediante grafos de contacto.
+Definimos a un grafo como una estructura $G$ que tiene aristas $E$ y vertices $V$.
+Por ejemplo, el siguiente grafo tiene vertices $V = \{v_1, v_2, v_3\}$ y aristas $E = \{(v_1, v_2), (v_2, v_3), (v_3, v_1)\}$.
+
+%Ejemplo de grafo normal triangular, con 3 vertices y 3 aristas.
+\begin{center}
+\begin{tikzpicture}[scale=1.5]
+    % Vértices
+    \node[circle, fill=black, inner sep=2pt, label=below left:$v_1$] (v1) at (-1,0) {};
+    \node[circle, fill=black, inner sep=2pt, label=below right:$v_2$] (v2) at (1,0) {};
+    \node[circle, fill=black, inner sep=2pt, label=above:$v_3$] (v3) at (0,1.732) {};
+    
+    % Aristas
+    \draw[thick, orange] (v1) -- (v2);
+    \draw[thick, orange] (v2) -- (v3);
+    \draw[thick, orange] (v3) -- (v1);
+\end{tikzpicture}
+\end{center}
+
+
+En un grafo de contacto, los vertices se ``expanden'' de manera que cada uno se transforme 
+en un disco. En nuestro caso, concretamente en un disco de radio 1.
+En cuanto a las aristas del grafo, se representan como un ``contacto'' entre dos discos, es decir,
+los discos que representan los vertices conectados por una arista son tangentes entre sí.
+
+% Ejemplo de grafo de contacto triangular, con 3 discos en contacto.
+\begin{center}
+\begin{tikzpicture}[scale=1.5]
+    % Discos
+    \draw[thick] (0,1.732) circle(1);
+    \draw[thick] (-1,0) circle(1);
+    \draw[thick] (1,0) circle(1);
+    
+    % Centros
+    \node[circle, fill=black, inner sep=2pt] (c1) at (-1,0) {};
+    \node[circle, fill=black, inner sep=2pt] (c2) at (1,0) {};
+    \node[circle, fill=black, inner sep=2pt] (c3) at (0,1.732) {};
+    
+    % Aristas entre centros
+    \draw[thick, dashed, orange] (c1) -- (c2);
+    \draw[thick, dashed, orange] (c2) -- (c3);
+    \draw[thick, dashed, orange] (c3) -- (c1);
+    
+    % Etiquetas cerca de los centros
+    \node at (-1.3, -0.2) {$c_1$};
+    \node at (1.3, -0.2) {$c_2$};
+    \node at (0, 2) {$c_3$};
+\end{tikzpicture}
+\end{center}
+
+Para nuestra investigacion, cada realización de uno de estos grafos en el plano
+le llamamos \textbf{configuración}, y la representamos mediante un
+vector $c$ de $\mathbb{R}^{2n}$, donde $n$ es el número de discos en la configuración. 
+\begin{equation}
+    c =(c_1, c_2, ..., c_n) \in \mathbb{R}^{2n}.
+\end{equation}
+Entonces, si tenemos 3 discos,
+la configuración se representa como un vector 
+\[
+    c = (c_1, c_2, c_3),
+\]
+
+donde cada $c_i$ representa un par ordenado $(x_i, y_i)$ que indica la posición del 
+centro del disco $c_i$ en el plano. En forma expandida:
+\[
+    c = (x_1, y_1, x_2, y_2, x_3, y_3).
+\]
+
+\subsection{Espacio de Configuraciones}
+¿Con qué configuraciones exactamente estamos trabajando? ¿Que propiedades tienen?
+En primer lugar, nuestras configuraciones:
+\begin{itemize}
+    \item Son \textbf{conexas}: el grafo de contacto asociado a la configuración es conexo.
+    \item Son \textbf{no superpuestas}: ningún par de discos se intersecta
+\end{itemize}
+
+Que el grafo sea conexo significa que no puede existir un vertice o conjunto de vertices ``aislados'', 
+o que no esté conectado al resto del grafo. Dicho de otra forma, todos los discos deben tener
+al menos un contacto con otro disco.\\
+
+Debido a que estamos trabajando con empaquetamientos, no tiene sentido considerar
+que nuestros grafos puedan tener discos que se intersecten entre sí, por lo que nuestra restricción
+principal es que todo centro del grafo debe estar a una distancia minima de $2$.
+Es decir, la distancia del disco $c_j$ y $c_i$ debe ser $\geq2$, o $=2$ si existe contacto entre $c_j$ y $c_i$.
+\\
+
+Así, todas las configuraciones ``admisibles'' pueden definirse como un conjunto de grafos conexos dado por:
+
+\begin{equation}
+    \mathcal{D}_n = \{ c \in \mathbb{R}^{2n} \mid ||c_i - c_j|| \geq 2, \forall i \neq j \}
+\end{equation}
+
+En esta definición, $||c_i - c_j||$ denota la distancia euclidiana entre los centros de los discos $c_i$ y $c_j$, 
+y $D_n$ es el espacio de configuraciones de $n$ discos congruentes en el plano.\\
+
+Podemos descomponer el espacio $\mathcal{D}_n$ en conjuntos que contienen todos 
+los grafos de contacto cuya estructura combinatoria es la misma; es decir, ``agrupar''
+todos los grafos que tienen las mismas aristas y vertices, pero con diferentes posiciones en el plano.
+A cada uno de estos conjuntos los llamamos \textbf{clases de contacto} o \textbf{estratos},
+denotados como $\mathcal{C}(G)$. Podemos definir una clase de contacto como:
+\begin{equation}
+    \mathcal{C}(G) = \{ c \in \mathcal{D}_n: ||c_j - c_i|| = 2, \forall (i,j) \in E(G)\}
+\end{equation}
+
+\subsection{Bordes de la envolvente convexa}
+Para calcular el perímetro de la envolvente de una configuración, es necesario
+primero que determinemos qué es la envolvente convexa exactamente.
+Consideramos que la envolvente son las lineas que forman el perímetro exterior del conjunto de discos
+de la configuración. Concretamente, es la suma de las distancias entre los vertices que forman parte del perímetro exterior,
+en orden ciclico, + 2$\pi$ (la longitud de los arcos de los discos que forman parte del perímetro).\\
+
+
+Supongamos que el perímetro conecta una secuencia de discos identificados por los índices $v_1, v_2, \dots, v_h$. 
+Definimos $\mathcal{B}$ como el conjunto de pares ordenados de índices que conforman este ciclo:
+
+\begin{equation}
+    \mathcal{B} = \{ (v_1, v_2), (v_2, v_3), \dots, (v_{h-1}, v_h), (v_h, v_1) \}.
+\end{equation}
+
+Cada elemento $(u, v) \in \mathcal{B}$ es un par de enteros que indica que existe una 
+conexión dirigida desde el disco con índice $u$ hacia el disco con índice $v$. \\
+
+Consideremos a modo de ejemplo una configuración $c = \{c_1, c_2, c_3\}$, con contactos
+$E = \{(c_1,c_2),(c_2,c_3),(c_3,c_1)\}$, y centros ubicados en:
+\[
+    c_1 = (0, 0), \quad c_2 = (2, 0), \quad c_3 = (1, \sqrt{3}).
+\]
+
+\begin{center}
+    \begin{tikzpicture}[scale=1.5]
+        % Discos
+        \draw[thick, black] (-1,0) circle(1);
+        \draw[thick, black] (1,0) circle(1);
+        \draw[thick, black] (0,1.732) circle(1);
+        
+        % Centros
+        \node[circle, fill=black, inner sep=2pt] (c1) at (-1,0) {};
+        \node[circle, fill=black, inner sep=2pt] (c2) at (1,0) {};
+        \node[circle, fill=black, inner sep=2pt] (c3) at (0,1.732) {};
+        
+        % Aristas entre centros
+        \draw[thick, dashed, orange] (c1) -- (c2);
+        \draw[thick, dashed, orange] (c2) -- (c3);
+        \draw[thick, dashed, orange] (c3) -- (c1);
+        
+        % Etiquetas cerca de los centros
+        \node at (-1.3, -0.2) {$c_1$};
+        \node at (1.3, -0.2) {$c_2$};
+        \node at (0, 2) {$c_3$};
+        
+        % Envolvente convexa - arcos externos (120 grados cada uno)
+        % Arco superior del disco c1
+        \draw[thick, cyan] (0.866, 2.232) arc (30:150:1);
+        % Arco izquierdo del disco c2
+        \draw[thick, cyan] (-1.866, 0.5) arc (150:270:1);
+        % Arco derecho del disco c3
+        \draw[thick, cyan] (1.866, 0.5) arc (30:-90:1);
+        
+        % Tangentes externas comunes
+        % Tangente de c1 a c2
+        \draw[thick, cyan] (-0.866, 2.232) -- (-1.866, 0.5);
+        % Tangente de c2 a c3
+        \draw[thick, cyan] (-1, -1) -- (1, -1);
+        % Tangente de c3 a c1
+        \draw[thick, cyan] (1.866, 0.5) -- (0.866, 2.232);
+    \end{tikzpicture}
+    \end{center}
+
+La envolvente convexa está dada por $\mathcal{B} = \{(1, 2), (2, 3), (3, 1)\}$.
+Podemos diferenciar entre la envolvente de los centros y la envolvente de los discos.
+Para efectos prácticos son esencialmente lo mismo, pero en casos como la cadena colineal
+es importante hacer la distinción.
+
+\subsection{Funcional Perímetro}
+Con todo esto en mente, definimos el funcional perímetro como la suma de las aristas
+que conforman la envolvente convexa de los centros más la longitud de los arcos:
+\begin{equation}
+    \text{Per}(c) = \sum_{(u,v) \in \mathcal{B}} ||c_v - c_u|| + 2\pi.
+\end{equation}
+
+Siguiendo nuestro ejemplo anterior ($\mathcal{B} = \{(1, 2), (2, 3), (3, 1)\}$), 
+tenemos que el perímetro de la configuración $c = \{c_1, c_2, c_3\}$ es:
+\[
+    \text{Per}(c) = ||c_2 - c_1|| + ||c_3 - c_2|| + ||c_1 - c_3|| + 2\pi = 6 + 2\pi.
+\]
+
+\section{Primera Variación: Determinando criticidad}
+Cuando buscamos obtener puntos críticos de una función, por lo general aplicamos
+la derivada y buscamos los puntos donde esta sea hace cero o se indetermina. Como nuestra función
+depende de multiples variables (los $2n$ valores que representan la configuración), utilizamos la
+derivada direccional, que nos indica la tasa de cambio de la función en una dirección que nosotros
+especifiquemos. Esa ``dirección'' la representamos mediante un vector $\delta c$, que en la práctica
+representa una perturbación a la configuración tal que la forma en la que los discos estaban inicialmente
+dispuestos cambie un poco.
+
+Concretamente, buscamos configuraciones de $\mathcal{C}(G)$ tales que para cualquier variación admisible
+$\delta c$ que mantenga la configuración dentro de la clase de contacto, la primera variación del perímetro sea cero:
+\begin{equation}
+    D \text{Per}(c)[\delta c] = 0.
+    \label{eq:criticidad}
+\end{equation}
+
+\subsection{¿Qué es una variación admisible?}
+Cuando hablamos de una variación o \textbf{movimiento} admisible, nos referimos a una perturbación que si bien modifica
+la posición inicial de los discos, mantiene los contactos originales entre ellos. Dicho
+de otra forma, la configuración resultante de aplicar la variación debe seguir perteneciendo
+a la misma clase de contacto $\mathcal{C}(G)$.\\
+
+Todo el conjunto de variaciones admisibles constituye un subespacio vectorial de $\mathbb{R}^{2n}$,
+denotado como $T_c \mathcal{C}(G)$, y llamado el \textbf{espacio tangente} a la clase de contacto $\mathcal{C}(G)$
+en el punto $c$. Este espacio representa todas las posibles direcciones en las que podemos movernos
+desde la configuración $c$ sin salir de la clase de contacto.\\
+
+Debido a que fisicamente estos movimientos se corresponden con la idea de ``rodar'' un
+disco por sobre otro, en adelante denotaremos a este espacio $\text{Roll}(c)$. Para calcularlo,
+utilizamos las restricciones de contacto sobre las que hablamos antes:
+\[
+    ||c_i - c_j|| = 2, \quad \forall (i,j) \in E(G).
+\]
+y las derivaremos. Esto nos da un sistema de ecuaciones lineales que podemos representar como una matriz.
+El kernel de esta matriz es precisamente el espacio tangente.
+
+\subsection{El gradiente y el espacio tangente}
+El gradiente de una función es un vector que apunta en la dirección de mayor aumento de la función.
+Convenientemente, el gradiente es una herramienta muy útil para saber ``hacia donde podemos movernos''
+dentro de una función con restricciones.
+
+Supongamos que tenemos una función que define una esfera de radio 3:
+\[
+    f(x, y, z) = x^2 + y^2 + z^2 = 9.
+\]
+Si nos ubicamos en un punto arbitrario de la esfera, y decidimos movernos permanentemente en linea recta 
+en alguna dirección... eventualmente nuestros pies saldrán de la esfera, y quedaremos flotando. \\
+
+Aquí es donde entra el concepto de \textbf{planitud local}. Si hicieramos un zoom potente al punto en el que
+estamos parados, la superficie de la esfera se vería perfectamente plana. Este ``plano'' imaginario sobre
+el que podemos movernos \textbf{infinitesimalmente} sin salir de la esfera es el Espacio Tangente a la esfera en ese punto.\\
+
+Lo que queremos es encontrar los movimientos que nos permitan permanecer sobre la superficie de la esfera.
+Para ello, utilizamos el gradiente $\nabla f$:
+\[
+    \nabla f(x, y, z) = \left( \frac{\partial f}{\partial x}, \frac{\partial f}{\partial y}, \frac{\partial f}{\partial z} \right) = (2x, 2y, 2z).
+\]
+El gradiente apunta en la dirección perpendicular al Espacio Tangente en el punto $(x, y, z)$.
+Por lo tanto, si queremos movernos sobre ese ``suelo'' sin salirnos, el movimiento debe ser perpendicular al gradiente. 
+Es decir, si $\delta c = (\delta x, \delta y, \delta z)$ es nuestro movimiento, entonces debe cumplirse que:
+\[
+    \nabla f(x, y, z) \cdot \delta c = 0.
+\]
+
+Esto asegura que el movimiento es válido ``instantaneamente''; si queremos movimientos largos, debemos
+recalcular el plano en cada paso.
+
+\subsection{La Matriz de Contacto}
+Llevando el ejemplo del gradiente a nuestras restricciones, tenemos que cada restricción de contacto
+entre dos discos $c_i$ y $c_j$ forma una superficie cuya intersección restringe las direcciones en las que podemos
+perturbar la configuración sin salir de la clase de contacto $\mathcal{C}(G)$. \\
+
+Al calcular el gradiente de cada una de estas funciones de restricción, obtenemos un conjunto de vectores
+que representan las direcciones en las que la distancia entre los discos $c_i$ y $c_j$ cambia más rápidamente.
+Estos vectores forman las filas de una matriz llamada la \textbf{Matriz de Contacto} $A(c)$. 
+Cada fila de $A(c)$ corresponde a una restricción de contacto, y cada columna corresponde a una 
+coordenada de los discos en la configuración.\\
+
+El espacio tangente $\text{Roll}(c)$ es entonces el núcleo (kernel) de la Matriz de Contacto:
+\[
+    \text{Roll}(c) = \text{ker}(A(c)) = T_c \mathcal{C}(G).
+\]
+
+Esto significa que cualquier vector $\delta c$ en el espacio tangente satisface la ecuación
+\begin{equation}
+    A(c) \cdot \delta c = 0.
+\end{equation}
+
+Es decir, las variaciones admisibles son aquellas que no alteran las restricciones de contacto
+impuestas por el grafo $G$.\\
+
+Siguiendo esta definición, la matriz de contacto $A$ tiene la forma:
+\[
+    A(c) = \begin{bmatrix}
+    \nabla h(c)_1 \\
+    \nabla h(c)_2 \\
+    ... \\
+    \nabla h(c)_n
+    \end{bmatrix}
+\]
+
+Donde cada $\nabla h(c)_k = ||c_j -c_i||-2$ es el gradiente de la función de restricción correspondiente al 
+contacto entre dos discos $c_i$ y $c_j$.\\
+
+
+\subsubsection{Deducción geométrica del gradiente de restricciones}
+En nuestro estudio, en lugar de derivar analíticamente cada función de restricción para obtener su gradiente,
+utilizamos las caracteristicas geométricas de los discos en contacto para deducir la estructura del gradiente.\\
+
+Consideremos dos discos en contacto, $c_i$ y $c_j$ y definamos el vector unitario que apunta en la dirección del contacto
+como $u_{ij}= \frac{c_j - c_i}{||c_j - c_i||}$. Si aplicamos perturbaciones infinitesimales $\delta c_i$ y $\delta c_j$ a los centros de los discos,
+la unica manera de que el contacto se mantenga es que los desplazamientos a lo largo de la línea que une los centros se cancelen mutuamente. Es decir,
+la proyección del movimiento de $c_i$ sobre $u_{ij}$ debe ser igual a la proyección del movimiento de $c_j$ sobre $u_{ij}$:
+\[
+    \langle u_{ij}, \delta c_j \rangle = \langle u_{ij}, \delta c_i \rangle.
+\]
+
+Ilustramos esta condición en la siguiente figura:
+\begin{center}
+    \begin{tikzpicture}[scale=2, >=Stealth, thick]
+        % --- Definición de Coordenadas ---
+        \coordinate (C1) at (0,0);      % Centro Disco 1
+        \coordinate (C2) at (2,0);      % Centro Disco 2
+        \coordinate (Contact) at (1,0); % Punto de contacto
+    
+        % --- Parámetros de Dibujo ---
+        \def\R{1}          % Radio de los discos
+        \def\proyLen{0.6}  % Longitud de la proyección
+        
+        % Vectores perturbación
+        \coordinate (dC1) at (\proyLen, 0.5); 
+        \coordinate (dC2) at ($(C2) + (\proyLen, -0.4)$);
+    
+        % --- 1. Discos (Fondo) ---
+        \draw[black, fill=white, fill opacity=1.0] (C1) circle (\R);
+        \draw[black, fill=white, fill opacity=1.0] (C2) circle (\R);
+        
+        % --- 2. Línea de Centros ---
+        \draw[dashed, orange!60, thin] (-0.8,0) -- (2.8,0);
+    
+        % Centros
+        \fill[black] (C1) circle (1.5pt) node[below left] {$c_i$};
+        \fill[black] (C2) circle (1.5pt) node[below left] {$c_j$};
+    
+        % --- 3. Vector Unitario u_ij ---
+        % Desplazado ligeramente hacia abajo para no chocar
+        \draw[->, pastelgreen, line width=1pt] 
+            ($(C1)+(0, -0.15)$) -- ($(Contact)+(0, -0.15)$) 
+            node[midway, below=1pt] {$u_{ij}$};
+    
+        % --- 4. Perturbación Disco 1 (Izquierda) ---
+        % Vector delta c_i
+        \draw[->, cyan, line width=1pt] (C1) -- (dC1) 
+            node[midway, above left=-2pt] {$\delta c_i$};
+        
+        % Proyección
+        \draw[->, orange, line width=1pt] (C1) -- (\proyLen, 0) 
+            node[midway, above=-1pt, font=\scriptsize] {$\text{p}_i$};
+        
+        % Línea de caída
+        \draw[densely dotted, orange, thick] (dC1) -- (\proyLen, 0);
+    
+        % --- 5. Perturbación Disco 2 (Derecha) ---
+        % Vector delta c_j
+        \draw[->, cyan, line width=1pt] (C2) -- (dC2) 
+            node[midway, below left=-4pt] {$\delta c_j$};
+        
+        % Proyección
+        \draw[->, orange, line width=1pt] (C2) -- ($(C2)+(\proyLen, 0)$) 
+            node[midway, above=-1pt, font=\scriptsize] {$\text{p}_j$};
+        
+        % Línea de caída
+        \draw[densely dotted, orange, thick] (dC2) -- ($(C2)+(\proyLen, 0)$);
+    
+    \end{tikzpicture}
+\end{center}
+Donde $\text{p}_i = \langle u_{ij}, \delta c_i \rangle$ y $\text{p}_j = \langle u_{ij}, \delta c_j \rangle$ son las proyecciones
+de las perturbaciones sobre el vector unitario $u_{ij}$.\\
+
+Si reordenamos los términos, obtenemos:
+\begin{equation}
+    \langle u_{ij}, \delta c_j \rangle - \langle u_{ij}, \delta c_i \rangle = 0 \quad \Rightarrow \quad \langle u_{ij}, \delta c_j - \delta c_i \rangle = 0.
+    \label{eq:condicion-contacto-primer-orden}
+\end{equation}
+
+Que constituye exactamente el gradiente de la restricción de contacto entre los discos $c_i$ y $c_j$. Al expandir el producto interno:
+\[
+    \langle u_{ij}, \delta c_j - \delta c_i \rangle = u_{ij} \cdot \delta c_j - u_{ij} \cdot \delta c_i = 0,
+\]
+se revela que los coeficientes que acompañan a las variaciones de la restricción son
+$-u_{ij}$ para el disco $c_i$ y $+u_{ij}$ para el disco $c_j$.\\
+
+\subsubsection{Estructura de la Matriz de Contacto}
+
+Considerando lo anterior, si descomponemos el vector unitario $u_{ij}$ en sus componentes:
+\[
+    u_{ij} = \frac{c_j - c_i}{||c_j - c_i||} = \begin{bmatrix} u^x_{ij} \\[0.5em] u^y_{ij} \end{bmatrix},
+\]
+podemos expresar explícitamente la estructura de la fila $k$ de la matriz $A(c)$. Recordemos primero que el 
+vector de configuración $c$ intercala las coordenadas $x$ e $y$ de cada disco:
+\[
+    c = (\dots, \underbrace{x_i, y_i}_{c_i}, \dots, \underbrace{x_j, y_j}_{c_j}, \dots).
+\]
+Si existe una restricción de contacto entre los discos $c_i$ y $c_j$, entonces la fila correspondiente
+de la matriz de contacto $A(c)$ se define como:
+\begin{equation}
+    \text{row}(A(c))_k = \Big[ 
+    \cdots \mathbf{0} \cdots,
+    \underbrace{-u^x_{ij}, \ -u^y_{ij}}_{\text{Cols. } x_i, y_i}, 
+    \cdots \mathbf{0} \cdots, 
+    \underbrace{u^x_{ij}, \ u^y_{ij}}_{\text{Cols. } x_j, y_j}, 
+    \cdots \mathbf{0} \cdots 
+    \Big].
+    \label{eq:gradiente-restriccion}    
+\end{equation}
+
+Notemos que:
+\begin{itemize}
+    \item Las columnas correspondientes al disco $c_i$ contienen las componentes del vector unitario con signo negativo ($-u_{ij}$).
+    \item Las columnas correspondientes al disco $c_j$ contienen las componentes con signo positivo ($+u_{ij}$).
+    \item Todas las demás columnas (correspondientes a discos no involucrados en este contacto específico) son cero.
+\end{itemize}
+
+\subsubsection{Ejemplo}
+Construyamos la matriz de contacto para la configuración triangular. Consideremos los siguientes datos:
+
+\begin{center}
+    \begin{tabular}{ccc}
+    \hline
+    \textbf{Disco} & \textbf{Centro (x, y)} & \textbf{Restricción} \\
+    \hline
+    $c_1$ & (0, 0)          & $||c_2-c_1|| - 2 = 0$ \\
+    $c_2$ & (2, 0)          & $||c_3-c_2|| - 2 = 0$ \\
+    $c_3$ & (1, $\sqrt{3}$) & $||c_1-c_3|| - 2 = 0$ \\
+    \hline
+    \end{tabular}
+\end{center}
+
+Tenemos 3 restricciones y 6 variables, por lo que la matriz de contacto $A(c)$ será de tamaño $3 \times 6$.
+
+\textbf{Paso 1: Cálculo de vectores unitarios} \\
+Primero calculamos los vectores de dirección $u_{ij}$ para cada contacto:
+\[
+    u_{12} = \dfrac{c_2 - c_1}{||c_2 - c_1||} = (1, 0)
+\]
+\[
+    u_{23} = \dfrac{c_3 - c_2}{||c_3 - c_2||} = \left(-\dfrac{1}{2}, \dfrac{\sqrt{3}}{2}\right)
+\]
+\[
+    u_{31} = \dfrac{c_1 - c_3}{||c_1 - c_3||} = \left(-\dfrac{1}{2}, -\dfrac{\sqrt{3}}{2}\right)
+\]
+
+\textbf{Paso 2: Construcción de las filas} \\
+Aplicando la estructura definida en la ecuación \eqref{eq:gradiente-restriccion}, ensamblamos cada fila asignando los componentes negativos y positivos a las columnas de los discos correspondientes:
+
+\begin{align*}
+    \text{row}(A)_1 &= \Big[ \underbrace{-1, \ 0}_{\text{Cols. } c_1}, \ \underbrace{1, \ 0}_{\text{Cols. } c_2}, \ 0, \ 0 \Big] \\[1em]
+    \text{row}(A)_2 &= \Big[ 0, \ 0, \ \underbrace{\frac{1}{2}, \ -\frac{\sqrt{3}}{2}}_{\text{Cols. } c_2}, \ \underbrace{-\frac{1}{2}, \ \frac{\sqrt{3}}{2}}_{\text{Cols. } c_3} \Big] \\[1em]
+    \text{row}(A)_3 &= \Big[ \underbrace{-\frac{1}{2}, \ -\frac{\sqrt{3}}{2}}_{\text{Cols. } c_1}, \ 0, \ 0, \ \underbrace{\frac{1}{2}, \ \frac{\sqrt{3}}{2}}_{\text{Cols. } c_3} \Big]
+\end{align*}
+
+\textbf{Paso 3: Matriz de Contacto completa} \\
+Apilando estas filas, obtenemos la matriz final. Incluimos encabezados para identificar bien las contribuciones para cada disco:
+
+\renewcommand{\arraystretch}{1.3}
+\[
+    A(c) = \left[
+    \begin{array}{cc|cc|cc}
+    \multicolumn{2}{c}{c_1} & \multicolumn{2}{c}{c_2} & \multicolumn{2}{c}{c_3} \\
+    x_1 & y_1 & x_2 & y_2 & x_3 & y_3 \\ \hline
+    -1 & 0 & 1 & 0 & 0 & 0 \\
+    0 & 0 & \frac{1}{2} & -\frac{\sqrt{3}}{2} & -\frac{1}{2} & \frac{\sqrt{3}}{2} \\
+    -\frac{1}{2} & -\frac{\sqrt{3}}{2} & 0 & 0 & \frac{1}{2} & \frac{\sqrt{3}}{2}
+    \end{array}
+    \right]
+\]
+\renewcommand{\arraystretch}{1}
+
+\subsection{Condición de criticidad}
+Volvamos a la condición de criticidad \eqref{eq:criticidad} que queremos satisfacer:
+\[
+    D \text{Per}(c)[\delta c] = 0
+\]
+
+Como ya sabemos que $\delta c$ es un vector que existe en el espacio de restricciones $\text{Roll}(c)$,
+podemos reformular la condición de criticidad como:
+\begin{equation}
+    D \text{Per}(c)[\delta c] = 0, \quad \forall \delta c \in \text{Roll}(c).
+    \label{eq:criticidad-extended}
+\end{equation}
+
+Esto significa que la primera variación del perímetro debe ser cero para cualquier perturbación
+dentro del espacio tangente a la clase de contacto en el punto $c$.\\
+
+¿Cuál es exactamente la forma de la primera derivada del perímetro? La calcularemos explicitamente a continuación.
+
+\subsection{La primera variación del perímetro}
+Recordemos que el perímetro está definido como:
+\begin{equation}
+    \text{Per}(c) = \sum_{(u,v) \in \mathcal{B}} ||c_v - c_u|| + 2\pi.
+\end{equation}
+Para calcular la primera variación del perímetro, aplicamos la definición de derivada direccional:
+
+\[
+    D \text{Per}(c)[\delta c] = \frac{d}{dt} \text{Per}(c + t \delta c).
+\]
+Por definición, la forma de la derivada direccional en nuestro caso es:
+\begin{equation}
+    D \text{Per}(c)[\delta c] = \langle \nabla \text{Per}(c), \delta c \rangle.
+    \label{eq:derivada-direccional}
+\end{equation}
+Procederemos a calcular la derivada explícitamente.\\
+
+Al sustituir el parametro $c + t \delta c$ en la expresión del perímetro, obtenemos:
+\[
+    \text{Per}(c + t \delta c) = \sum_{(u,v) \in \mathcal{B}} ||(c_v + t \delta c_v) - (c_u + t \delta c_u)|| + 2\pi.
+\]
+Y luego, la forma de la derivada es:
+\[
+    \frac{d}{dt} \text{Per}(c + t \delta c) = \frac{d}{dt} \sum_{(u,v) \in \mathcal{B}} ||(c_v + t \delta c_v) - (c_u + t \delta c_u)||.
+\]
+Sabemos que la derivada de la sumatoria es la suma de las derivadas, por lo que podemos centrarnos solo en:
+\[
+    \frac{d}{dt} ||(c_v + t \delta c_v) - (c_u + t \delta c_u)||.
+\]
+Para conveniencia, reordenaremos los terminos para que separar los $c$ de los $\delta c$:
+\[
+    \frac{d}{dt} ||(c_v - c_u) + t (\delta c_v - \delta c_u)||.
+\]
+Y hacemos que $x = (c_v - c_u) + t (\delta c_v - \delta c_u)$:
+\[
+    \frac{d}{dt} ||x(t)|| = \frac{d}{dt} \sqrt{x_1(t)^2 + x_2(t)^2}.
+\]
+Por regla de la cadena (f(g(x))' = f'(g(x))g'(x)):
+\[
+    \frac{d}{dt} ||x(t)|| = \frac{1}{2}(x_1(t)^2 + x_2(t)^2)^{-\frac{1}{2}} \cdot 2(x_1(t)x_1'(t) + x_2(t)x_2'(t)).
+\]
+Simplificamos la fracción y reescribimos:
+\[
+    \frac{d}{dt} ||x(t)|| = \frac{x_1(t)x_1'(t) + x_2(t)x_2'(t)}{||x(t)||}.
+\]
+Notamos que el numerador tiene la forma de un producto interno ($a_1b_1 + a_2b_2 = \langle a,b \rangle$):
+\[
+    \frac{d}{dt} ||x(t)|| = \frac{\langle x(t),x'(t)\rangle}{||x(t)||}.
+\]
+La bilinealidad del producto interno nos permite escribir:
+\[
+    \frac{d}{dt} ||x(t)|| = \left\langle \frac{x(t)}{||x(t)||}, x'(t) \right\rangle.
+\]
+Finalmente, recordamos que $x(t) = (c_v - c_u) + t (\delta c_v - \delta c_u)$ y $x'(t) = (\delta c_v - \delta c_u)$, por lo que:
+\[
+    \frac{d}{dt} ||(c_v + t \delta c_v) - (c_u + t \delta c_u)|| = \left\langle \frac{(c_v - c_u) + t (\delta c_v - \delta c_u)}{||(c_v - c_u) + t (\delta c_v - \delta c_u)||}, (\delta c_v - \delta c_u) \right\rangle.
+\]
+Evaluando en $t=0$, obtenemos la expresión final para la primera variación del
+perímetro:
+\[
+    D \text{Per}(c)[\delta c] = \sum_{(u,v) \in \mathcal{B}} \left\langle \frac{(c_v - c_u)}{||c_v - c_u||}, (\delta c_v - \delta c_u) \right\rangle.
+\]
+Si consideramos el primer termino del producto interno como un vector unitario $t_{uv} = \dfrac{(c_v - c_u)}{||c_v - c_u||}$,
+la expresión se puede reescribir como:
+\begin{equation}
+    D \text{Per}(c)[\delta c] = \sum_{(u,v) \in \mathcal{B}} \langle t_{uv}, (\delta c_v - \delta c_u) \rangle.
+    \label{eq:first-variation-perimeter}
+\end{equation}
+
+Si bien la expresión se ``parece' a (\ref{eq:derivada-direccional}), no es exactamente igual. Para llegar a esa forma,
+necesitamos reordenar los la sumatoria para nuestra conveniencia. Consideramos en primer lugar separar 
+el producto interno en dos terminos:
+\[
+    D \text{Per}(c)[\delta c] = \sum_{(u,v) \in \mathcal{B}} \langle t_{uv}, \delta c_v \rangle - \sum_{(u,v) \in \mathcal{B}} \langle t_{uv}, \delta c_u \rangle.
+\]
+Luego, reordenamos cada sumatoria para agrupar los terminos por disco:
+\[
+    D \text{Per}(c)[\delta c] = \sum_{(u,k) \in \mathcal{B}} \langle t_{uk}, \delta c_k \rangle - \sum_{(k,v) \in \mathcal{B}} \langle t_{kv}, \delta c_k \rangle.
+\]
+Finalmente, combinamos las dos sumatorias en una sola:
+\begin{equation}
+    D \text{Per}(c)[\delta c] = \sum_{k \in \mathcal{V}} \langle t_{in} - t_{out}, \delta c_k \rangle.
+    \label{eq:first-variation-reordered}
+\end{equation}
+Donde $t_{in}$ es el vector tangente que entra al disco $c_k$ y $t_{out}$ es el vector tangente que sale del disco $c_k$. $\mathcal{V}$ es el conjunto de 
+discos que forman parte de la envolvente convexa. $t_{in}$ y $-t_{out}$  permiten representar la contribución neta
+de cada disco al gradiente del perímetro. Al efectuar la sumatoria, la forma final es exactamente igual a la ecuación (\ref{eq:derivada-direccional}).\\
+
+Finalmente, tenemos que la condición de criticidad \eqref{eq:criticidad-extended} se puede reescribir como\footnote{Como $\sum_{(u,k) \in \mathcal{B}} \langle t_{uv}, \delta c_v - \delta c_u \rangle = \langle \nabla \text{Per}(c), \delta c \rangle$, es correcto decir que la suma de $t_{uv}$ es, de hecho, el gradiente.}:
+\begin{equation}
+    \langle \nabla \text{Per}(c), \delta c \rangle = 0, \quad \forall \delta c \in \text{Roll}(c).
+    \label{eq:criticidad-final}
+\end{equation}
+Equivalentemente, la operación corresponde a restringir el gradiente al espacio tangente, de manera que el vector
+resultante sea nulo:
+\[
+    \text Z^\top \nabla \text{Per}(c) = 0,
+\]
+donde $Z$ es una base del espacio $\text{Roll}(c)$.
+
+
+
+\subsubsection{Ejemplo}
+Consideremos nuevamente la configuración triangular de antes. Recordando sus datos:
+% tabla con discos, centros y vectores unitarios u
+\begin{center}
+    \begin{tabular}{ccc}
+    \hline
+    \textbf{Disco} & \textbf{Centro (x, y)} & \textbf{Vector Unitario $t_{in}$ / $t_{out}$} \\
+    \hline
+    $c_1$ & (0, 0)          & $u_{ij} = (1, 0)$ \\
+    $c_2$ & (2, 0)          & $u_{ij} = (-\frac{1}{2}, \frac{\sqrt{3}}{2})$ \\
+    $c_3$ & (1, $\sqrt{3}$) & $u_{ij} = (-\frac{1}{2}, -\frac{\sqrt{3}}{2})$ \\
+    \hline
+    \end{tabular}
+\end{center}
+
+Los contactos coinciden con los bordes de la envolvente convexa, por lo que cada vector t es:
+\begin{itemize}
+    \item Para el disco $c_1$: $t_{in} = \left(-\frac{1}{2}, -\frac{\sqrt{3}}{2}\right)$, $t_{out} = (1, 0)$
+    \item Para el disco $c_2$: $t_{in} = (1, 0)$, $t_{out} = \left(-\frac{1}{2}, \frac{\sqrt{3}}{2}\right)$
+    \item Para el disco $c_3$: $t_{in} = \left(-\frac{1}{2}, \frac{\sqrt{3}}{2}\right)$, $t_{out} = \left(-\frac{1}{2}, -\frac{\sqrt{3}}{2}\right)$
+\end{itemize}
+
+Luego, los gradientes netos para cada disco son:
+\[
+    \nabla \text{Per}(c_1) = t_{in} - t_{out} = \left(-\frac{1}{2}, -\frac{\sqrt{3}}{2}\right) - (1, 0) = \left(-\frac{3}{2}, -\frac{\sqrt{3}}{2}\right)
+\]
+\[
+    \nabla \text{Per}(c_2) = t_{in} - t_{out} = (1, 0) - \left(-\frac{1}{2}, \frac{\sqrt{3}}{2}\right) = \left(\frac{3}{2}, -\frac{\sqrt{3}}{2}\right)
+\]
+\[
+    \nabla \text{Per}(c_3) = t_{in} - t_{out} = \left(-\frac{1}{2}, \frac{\sqrt{3}}{2}\right) - \left(-\frac{1}{2}, -\frac{\sqrt{3}}{2}\right) = (0, \sqrt{3})
+\]
+Por lo tanto, el gradiente completo del perímetro es:
+\[
+    \nabla \text{Per}(c)^\top = \left[-\frac{3}{2}, -\frac{\sqrt{3}}{2}, \frac{3}{2}, -\frac{\sqrt{3}}{2}, 0, \sqrt{3}\right].
+\]
+La condición de criticidad (\ref{eq:criticidad-final}) requiere que este gradiente sea ortogonal
+a cualquier variación admisible $\delta c$ en el espacio $\text{Roll}(c)$. Es decir, 
+la proyección del gradiente sobre el espacio tangente debe ser cero. Si consideramos $Z$ como una
+base de $\text{Roll}(c)$, entonces la condición se puede expresar como:
+\[
+    Z^T \nabla \text{Per}(c) = 0.
+\]
+\renewcommand{\arraystretch}{1.5} 
+Consideramos la siguiente base:
+\[
+    Z = \begin{bmatrix}
+    \sqrt{3} & 1 & -\sqrt{3}\\
+    -1       & 0 & 2        \\
+    \sqrt{3} & 1 & -\sqrt{3}\\
+    1        & 0 & 0        \\
+    0        & 0 & 0        \\
+    0        & 0 & 1        \\
+    \end{bmatrix}.
+\]
+Calculamos la proyección:
+\[
+    Z^T \nabla \text{Per}(c) = 
+    \begin{bmatrix}
+    \sqrt{3}  & -1 & \sqrt{3} & 1 & 0 & 0 \\
+    1         & 0  & 1        & 0 & 0 & 0 \\
+    -\sqrt{3} & 2  & -\sqrt{3}& 0 & 0 & 1 \\
+    \end{bmatrix}
+    \begin{bmatrix}
+    -\frac{3}{2} \\
+    -\frac{\sqrt{3}}{2} \\
+    \frac{3}{2} \\
+    -\frac{\sqrt{3}}{2} \\
+    0 \\
+    \sqrt{3} \\
+    \end{bmatrix}
+\]
+\renewcommand{\arraystretch}{1} % Volver al estándar después si quieres
+
+\begin{align*}
+    (Z^T \nabla \text{Per})_1 &= \sqrt{3}(-\tfrac{3}{2}) + (-1)(-\tfrac{\sqrt{3}}{2}) + \sqrt{3}(\tfrac{3}{2}) + 1(-\tfrac{\sqrt{3}}{2}) + 0 + 0 = 0 \\
+    (Z^T \nabla \text{Per})_2 &= 1(-\tfrac{3}{2}) + 0 + 1(\tfrac{3}{2}) + 0 + 0 + 0 = 0 \\
+    (Z^T \nabla \text{Per})_3 &= -\sqrt{3}(-\tfrac{3}{2}) + 2(-\tfrac{\sqrt{3}}{2}) - \sqrt{3}(\tfrac{3}{2}) + 0 + 0 + 1(\sqrt{3}) = 0
+\end{align*}
+
+\[
+    \therefore \quad Z^T \nabla \text{Per}(c) = 
+    \begin{bmatrix}
+    0 \\ 0 \\ 0
+    \end{bmatrix}.
+\]
+
+Así, se verifica que el gradiente del perímetro es efectivamente ortogonal
+al espacio tangente, confirmando que la configuración triangular es un punto crítico del funcional perímetro en su 
+clase de contacto.
+
+
+\section{Segunda Variación: Determinando estabilidad}
+Para saber si una configuración crítica es un mínimo, máximo o punto de silla, necesitamos analizar la segunda derivada
+del funcional perímetro. El objetivo de este análisis es construir una matriz Hessiana, cuyos
+autovalores nos indicarán las direcciones de estabilidad e inestabilidad alrededor del punto crítico.\\
+
+Partiendo de nuestro resultado anterior (\ref{eq:criticidad-final}), la segunda variación del perímetro
+se define como:
+\begin{equation}
+    D^2 \text{Per}(c)[\delta c] = \frac{d}{dt} \langle \nabla \text{Per}(c), \delta c \rangle.
+    \label{eq:second-variation}
+\end{equation}
+Similar a la primera variación, evaluamos la derivada en $t=0$ y consideramos solo
+variaciones admisibles $\delta c \in \text{Roll}(c)$.\\
+
+Al aplicar la regla del producto:
+\[
+    \frac{d}{dt} \langle \nabla \text{Per}(c), \delta c \rangle = \langle \frac{d}{dt} \nabla\text{Per}(c(t)), c(t) \rangle + \langle \nabla \text{Per}(c(t)), c(t)'' \rangle.
+\]
+
+Esto divide la segunda variación en dos términos. El primer término involucra los aspectos euclidianos
+de la configuración, mientras que el segundo término captura las contribuciones de las restricciones de contacto que aseguran
+que el movimiento se mantenga a lo largo de la trayectoria curva impuesta por $\mathcal{C}(G)$.\\
+
+
+\subsection{Calculo del termino euclidiano}
+Cambiamos el punto de partida de la derivada para mayor conveniencia. Utilizamos la ecuación (\ref{eq:first-variation-perimeter}):
+\[
+    D^2 \text{Per}(c)[\delta c] = \frac{d}{dt} \sum_{(u,v) \in \mathcal{B}} \langle t_{uv}, (\delta c_v - \delta c_u) \rangle.
+\]
+Aplicando la regla del producto:
+\[
+    D^2 \text{Per}(c)[\delta c] = \sum_{(u,v) \in \mathcal{B}} \left( \langle \frac{d}{dt} t_{uv}, (\delta c_v - \delta c_u) \rangle + \langle t_{uv}, \frac{d}{dt}(\delta c_v - \delta c_u) \rangle \right).
+\]
+Nos enfocamos en el primer termino. Recordando que $t_{uv} = \dfrac{(c_v - c_u)}{||c_v - c_u||}$, y definiendo $x = c_v - c_u$, calculamos su derivada:
+\[
+    \frac{d}{dt} t_{uv} = \frac{d}{dt} \left( \frac{x(t)}{||x(t)||} \right).
+\]
+Por regla del cuociente:
+\[
+     \frac{x'(t) \cdot ||x(t)|| - x(t) \cdot \frac{d}{dt} ||x(t)||}{||x(t)||^2}.
+\]
+A partir del resultado anterior, sabemos que $\frac{d}{dt} ||x(t)|| = \left\langle t_{uv}, x'(t) \right\rangle$. Sustituyendo, y simplficando:
+\[
+    = \frac{x'(t)}{||x(t)||} - \frac{x(t)}{||x(t)||^2} \left\langle t_{uv}, x'(t) \right\rangle.
+\]
+Notamos que en el segundo termino tenemos la forma $\frac{x(t)}{||x(t)||}$, que corresponde a $t_{uv}$:
+\[
+    = \frac{x'(t)}{||x(t)||} - \frac{t_{uv} \left\langle t_{uv}, x'(t) \right\rangle}{||x(t)||}.
+\]
+\[
+    = \frac{1}{||x(t)||} \left( x'(t) - t_{uv} \left\langle t_{uv}, x'(t) \right\rangle \right).
+\]
+Al extraer el término $x'(t)$, reconocemos la forma del operador proyección ortogonal:
+\[
+    = \frac{1}{||x(t)||} \left( I - t^\top_{uv} t_{uv} \right) x'(t).
+\]
+Finalmente, recordamos que $x'(t) = \delta c_v - \delta c_u$ y $||x(t)|| = ||c_v - c_u||$:
+\begin{equation}
+    = \frac{1}{||c_v - c_u||} \left( I - t^\top_{uv} t_{uv} \right) (\delta c_v - \delta c_u).
+    \label{eq:derivative-tangent-vector}
+\end{equation}
+Sustituyendo este resultado en el primer término de la segunda variación, obtenemos:
+\[
+    \left\langle \frac{1}{||c_v - c_u||} \left( I - t^\top_{uv} t_{uv} \right) (\delta c_v - \delta c_u), (\delta c_v - \delta c_u) \right\rangle.
+\]
+\[
+    = \frac{1}{||c_v - c_u||} \langle (\delta c_v - \delta c_u), \left( I - t^\top_{uv} t_{uv} \right) (\delta c_v - \delta c_u) \rangle.
+\]
+Al resolver esta expresión, obtenemos un escalar que representa la contribución euclidiana.
+No nos interesa realmente un escalar, sino una matriz que nos permita construir la Hessiana del sistema. Por lo tanto,
+aislamos el término dentro del producto interno para formar el bloque:
+\begin{equation}
+    \nabla ^2 \text{Per}(c)_{(u,v)} = M_{uv} = \frac{1}{||c_v - c_u||} \left( I - t^\top_{uv} t_{uv} \right).
+    \label{eq:euclidean-term}
+\end{equation}
+La matriz $\mathcal{H}_{eucl}$ se construye posicionando cada bloque $M_{uv}$ según una regla estilo laplaciano:
+
+\begin{itemize}
+    \item Las diagonales de los bloques correspondientes a los discos $c_u$ y $c_v$ reciben $\sum M_{uv}$.
+    \item Los bloques fuera de la diagonal correspondientes a los pares $(c_u, c_v)$ reciben $-M_{uv}$.
+    \item Los bloques correspondientes a pares de discos sin contacto reciben la matriz nula.
+\end{itemize}
+
+La matriz resultante $\mathcal{H}_{eucl}$ poseera dimensión $2n \times 2n$, donde $n$ es el número de discos en la configuración.
+
+\subsection{Calculo del termino geométrico / de restricciones}
+El termino $\langle \nabla \text{Per}(c(t)), c(t)'' \rangle$ captura las contribuciones de las restricciones de contacto.
+Nuestro objetivo es expresar c''(t) en términos de las variaciones admisibles $\delta c$ y las propiedades geométricas
+de la configuración.\\
+
+\subsubsection{Multiplicadores de Lagrange}
+Utilizaremos Multiplicadores de Lagrange para ayudarnos a resolver esto.
+
+\begin{theorem}[Multiplicadores de Lagrange]
+    Sea $\mathcal{X}$ una subvariedad conocida por medio de una función vectorial $F$. 
+    Si una función $\varphi$ restringida a $\mathcal{X}$ tiene un punto crítico en $a 
+    \in \mathcal{X}$, entonces existen valores $\lambda_1, ..., \lambda_m$ tal que 
+    la derivada de $\varphi$ en $a$ es una combinación lineal de las derivadas de las 
+    funciones de restricción:
+    \[
+    [D\varphi(a)] = \lambda_1[DF_1(a)]+...+\lambda_m[DF_m(a)]
+    \]
+\end{theorem}
+
+En nuestro caso, la variedad $\mathcal{X}$ es la clase de contacto $\mathcal{C}(G)$, 
+la función $\varphi$ es el funcional perímetro $\text{Per}(c)$, y las funciones de restricción
+son las restricciones de contacto entre los discos.\\
+
+Aplicando el teorema, tenemos que en un punto crítico $c \in \mathcal{C}(G)$, existen
+valores $\lambda_{ij}$ asociados a cada restricción de contacto $h_{ij} = ||c_j-c_i||-2, (i,j) \in E(G)$, tales que:
+\begin{equation}
+    \nabla \text{Per}(c) = \sum_{(i,j) \in E(G)} \lambda_{ij} \nabla h_{ij}(c).
+\end{equation}
+
+Sustituyendo en el término geométrico de (\ref{eq:second-variation}):
+\[
+    \langle \nabla \text{Per}(c(t)), c(t)'' \rangle =  \left\langle \sum_{(i,j) \in E(G)} \lambda_{ij} \nabla h_{ij}(c), c(t)'' \right\rangle.
+\]
+\[
+    = \sum_{(i,j) \in E(G)} \lambda_{ij} \langle \nabla h_{ij}(c), c(t)'' \rangle.
+\]
+\subsubsection{Despejando $\langle \nabla h_{ij}(c), c(t)'' \rangle$}
+Derivaremos $h_{ij}$ dos veces respecto al tiempo. Siguiendo el resultado de la ecuación (\ref{eq:first-variation-reordered}), tenemos que la primera derivada es:
+\[
+    \frac{d}{dt} h_{ij}(c(t)) = \left\langle \frac{c_j(t) - c_i(t)}{||c_j(t) - c_i(t)||}, c_j'(t) - c_i'(t) \right\rangle = \langle \nabla h_{ij}(c), c'(t) \rangle.
+\]
+Por regla del producto, tenemos luego que la segunda derivada es:
+\[
+    \frac{d}{dt} \langle \nabla h_{ij}(c), c'(t) \rangle = \langle \frac{d}{dt} \nabla h_{ij}(c), c'(t) \rangle + \langle \nabla h_{ij}(c), c(t)'' \rangle.
+\]
+Evidenciamos en (\ref{eq:euclidean-term}) que $\frac{d}{dt} \nabla f(x)$ es $\nabla ^2 f(x) \cdot x'$. Por lo tanto:
+\[
+    \frac{d}{dt} \langle \nabla h_{ij}(c), c'(t) \rangle = \langle \nabla^2 h_{ij}(c) \cdot c'(t), c'(t) \rangle + \langle \nabla h_{ij}(c), c(t)'' \rangle.
+\]
+Reordenando para despejar $\langle \nabla h_{ij}(c), c(t)'' \rangle$:
+\[
+    \langle \nabla h_{ij}(c), c(t)'' \rangle = \frac{d}{dt} \langle \nabla h_{ij}(c), c'(t) \rangle - \langle \nabla^2 h_{ij}(c) \cdot c'(t), c'(t) \rangle.
+\]
+Notamos que la derivada del primer término es cero, ya que $h_{ij}(c) = 0$ para todo $t$ (la restricción se mantiene). Por lo tanto:
+\[
+    \langle \nabla h_{ij}(c), c(t)'' \rangle = - \langle \nabla^2 h_{ij}(c) \cdot c'(t), c'(t) \rangle.
+\]
+Evaluando en 0, y reescribiendo matricialmente:
+\begin{equation}
+    \langle \nabla h_{ij}(c), c''(0) \rangle = - \delta c^\top \nabla^2 h_{ij}(c) \delta c.
+    \label{eq:second-derivative-restriction}
+\end{equation}
+
+\subsubsection{Matriz geométrica de restricciones}
+Sustituyendo (\ref{eq:second-derivative-restriction}) en el segundo término de la segunda variación, obtenemos:
+\[
+    \langle \nabla \text{Per}(c(t)), c(t)'' \rangle = - \sum_{(i,j) \in E(G)} \lambda_{ij} \delta c^\top \nabla^2 h_{ij}(c) \delta c.
+\]
+Calculamos $\nabla^2 h_{ij}(c)$. Según lo que obtuvimos en la ecuación (\ref{eq:euclidean-term}), tenemos que:
+\[
+    \nabla^2 h_{ij}(c) = \frac{1}{||c_j - c_i||} \left( I - u^\top_{ij} u_{ij} \right).
+\]
+La distancia entre los discos en contacto es constante e igual a 2, por lo que:
+\[
+    \nabla^2 h_{ij}(c) = \frac{1}{2} \left( I - u^\top_{ij} u_{ij} \right).
+\]
+Sustituyendo en la expresión de la segunda variación:
+\[
+    \langle \nabla \text{Per}(c(t)), c(t)'' \rangle = - \sum_{(i,j) \in E(G)} \lambda_{ij} \delta c^\top \left( \frac{1}{2} \left( I - u^\top_{ij} u_{ij} \right) \right) \delta c.
+\]
+Aislamos el término cuadrático en $\delta c$ para definir la matriz geométrica de restricciones:
+\begin{equation}
+    \mathcal{H}_{\mathrm{geom}} = - \sum_{(i,j) \in E(G)}  \frac{\lambda_{ij}}{2} \left( I - u^\top_{ij} u_{ij} \right).
+    \label{eq:geometric-term}
+\end{equation}
+
+El Hessiano geométrico se construye a partir de estos bloques, siguiendo un esquema similar al del Hessiano euclidiano:
+\begin{itemize}
+    \item Las diagonales de los bloques correspondientes a los discos $c_i$ y $c_j$ reciben $\sum \frac{\lambda_{ij}}{2} \left( I - u^\top_{ij} u_{ij} \right)$.
+    \item Los bloques fuera de la diagonal correspondientes a los pares $(c_i, c_j)$ reciben $-\frac{\lambda_{ij}}{2} \left( I - u^\top_{ij} u_{ij} \right)$.
+    \item Los bloques correspondientes a pares de discos sin contacto reciben la matriz nula.
+\end{itemize}
+
+
+\subsubsection{Hessiano Total y Hessiano Intrínseco}
+Finalmente, combinamos los dos términos para obtener el Hessiano total del sistema:
+\begin{equation}
+    \mathcal{H}_{\mathrm{total}} = \mathcal{H}_{eucl} + \mathcal{H}_{\mathrm{geom}}.
+    \label{eq:total-hessian}
+\end{equation}
+
+Restringimos esta matriz al espacio tangente $\text{Roll}(c)$ para obtener el Hessiano intrínseco:
+\begin{equation}
+    \mathcal{H}_{\mathrm{intr}} = Z^\top \mathcal{H}_{\mathrm{total}} Z
+    \label{eq:intrinsic-hessian}
+\end{equation}
+Donde $Z$ es una base de $\text{Roll}(c)$.\\
+
+La ecuación \eqref{eq:intrinsic-hessian} que restringe el Hessiano total a $\text{Roll}(c)$ surge 
+al considerar los $\delta c$ admisibles dentro del espacio tangente que fueron obtenidos al despejar cada
+bloque anteriormente.
+Si definimos un vector $y \in \mathbb{R}^k$ tal que cualquier variación admisible se exprese como 
+$\delta c = Z y$, entonces el término cuadrático se transforma según:
+\[
+    \delta c^\top \mathcal{H}_{\mathrm{total}} \delta c = (Z y)^\top \mathcal{H}_{\mathrm{total}} (Z y) = y^\top \underbrace{(Z^\top \mathcal{H}_{\mathrm{total}} Z)}_{\mathcal{H}_{\mathrm{intr}}} y.
+\]
+Dado que $\mathcal{H}_{\mathrm{total}}$ es una matriz de $2n \times 2n$ y $Z$ es de $2n \times k$ 
+(donde $k$ es la dimensión de \text{Roll}(c)), el producto resultante $\mathcal{H}_{\mathrm{intr}}$ constituye una 
+matriz cuadrada de $k \times k$. \\
+
+El análisis de los autovalores de $\mathcal{H}_{\mathrm{intr}}$ nos permitirá determinar la estabilidad.
+Los movimientos con autovalor 0 corresponden a direcciones dentro del espacio tangente que no modifican
+el perímetro. Siempre encontraremos como mínimo 3 autovalores 0, correspondientes a las
+traslaciones y rotación. Cualquier autovalor adicional 0 indica una dirección plana. \\
+
+Si todos los autovalores son positivos, la configuración es un mínimo local (estable).\\
+
+Si todos son negativos, es un máximo local (inestable). Si hay más de 3 autovalores 0, hablamos de una dirección plana.
+
+\subsubsection{Ejemplo}
+Consideraremos una configuración cuadrada de 4 discos en contacto. Los centros de los discos son:
+\begin{center}
+    \begin{tabular}{cc}
+    \hline
+    \textbf{Disco} & \textbf{Centro (x, y)} \\
+    \hline
+    $c_1$ & (0, 0) \\
+    $c_2$ & (2, 0) \\
+    $c_3$ & (2, 2) \\
+    $c_4$ & (0, 2) \\
+    \hline
+    \end{tabular}
+\end{center}
+
+Al igual que con el triangulo, las aristas de le envolvente coinciden con los contactos:
+\begin{center}
+    \begin{tabular}{ccc}
+    \hline
+    \textbf{Vector Unitario $u_{ij}$} & \textbf{Vector Unitario $t_{uv}$} \\
+    \hline
+    $u_{12} = (1, 0)$  & $t_{12} = (1, 0)$ \\
+    $u_{23} = (0, 1)$  & $t_{23} = (0, 1)$\\
+    $u_{34} = (-1, 0)$ & $t_{34} = (-1, 0)$\\
+    $u_{41} = (0, -1)$ & $t_{41} = (0, -1)$\\
+    \hline
+    \end{tabular}
+\end{center}
+La matriz de contacto de esta configuración es:
+\[
+    A = \begin{bmatrix}
+    -1 & 0 & 1 & 0 & 0 & 0 & 0 & 0\\
+    0 & 0 & 0 & -1 & 0 & 1 & 0 & 0 \\
+    0 & 0 & 0 & 0 & 1 & 0 & -1 & 0 \\
+    0 & -1 & 0 & 0 & 0 & 0 & 0 & 1
+    \end{bmatrix}
+\]
+
+Y su gradiente:
+\[
+    \nabla \text{Per}(c)^\top = \begin{bmatrix}
+    -1 & -1 & 1 & -1 & 1 & 1 & -1 & 1
+    \end{bmatrix}
+\]
+
+Calculamos los bloques del Hessiano euclidiano utilizando la ecuación (\ref{eq:euclidean-term}).
+Como $||c_j - c_i|| = 2$ para todos los contactos, tenemos:
+\[
+    M_{12} = \frac{1}{2} \left( 
+        \begin{bmatrix} 1 & 0 \\ 0 & 1 \end{bmatrix} 
+        - \begin{bmatrix} 1 \\ 0 \end{bmatrix} 
+        \begin{bmatrix} 1 & 0 \end{bmatrix} \right) = \frac{1}{2} \begin{bmatrix} 0 & 0 \\ 0 & 1 \end{bmatrix}
+\]
+\[
+    M_{23} = \frac{1}{2} \left( 
+        \begin{bmatrix} 1 & 0 \\ 0 & 1 \end{bmatrix} 
+        - \begin{bmatrix} 0 \\ 1 \end{bmatrix} 
+        \begin{bmatrix} 0 & 1 \end{bmatrix} \right) = \frac{1}{2} \begin{bmatrix} 1 & 0 \\ 0 & 0 \end{bmatrix}
+\]
+\[
+    M_{34} = \frac{1}{2} \left( 
+        \begin{bmatrix} 1 & 0 \\ 0 & 1 \end{bmatrix} 
+        - \begin{bmatrix} -1 \\ 0 \end{bmatrix} 
+        \begin{bmatrix} -1 & 0 \end{bmatrix} \right) = \frac{1}{2} \begin{bmatrix} 0 & 0 \\ 0 & 1 \end{bmatrix}
+\]
+\[
+    M_{41} = \frac{1}{2} \left( 
+        \begin{bmatrix} 1 & 0 \\ 0 & 1 \end{bmatrix} 
+        - \begin{bmatrix} 0 \\ -1 \end{bmatrix} 
+        \begin{bmatrix} 0 & -1 \end{bmatrix} \right) = \frac{1}{2} \begin{bmatrix} 1 & 0 \\ 0 & 0 \end{bmatrix}
+\]
+Siguiendo la estructura de ensamblaje que mencionamos antes, podemos construir la matriz
+Euclidiana de la siguiente manera:
+
+\renewcommand{\arraystretch}{1.5}
+\[
+    \mathcal{H}_{eucl} = 
+    \left[
+    \begin{array}{c|c|c|c}
+        \underbrace{M_{12} + M_{41}}_{\text{Disco } 1} & -M_{12} & 0 & -M_{41} \\ \hline
+        -M_{12} & \underbrace{M_{12} + M_{23}}_{\text{Disco } 2} & -M_{23} & 0 \\ \hline
+        0 & -M_{23} & \underbrace{M_{23} + M_{34}}_{\text{Disco } 3} & -M_{34} \\ \hline
+        -M_{41} & 0 & -M_{34} & \underbrace{M_{34} + M_{41}}_{\text{Disco } 4}
+    \end{array}
+    \right]
+\]
+\renewcommand{\arraystretch}{1}
+Sustituyendo cada bloque, obtenemos el Hessiano euclidiano:
+
+\[
+    \mathcal{H}_{eucl} = \begin{bmatrix}
+    \frac{1}{2} & 0 & 0 & 0 & 0 & 0 & -\frac{1}{2} & 0 \\[0.8em]
+    0 & \frac{1}{2} & 0 & -\frac{1}{2} & 0 & 0 & 0 & 0 \\[0.8em]
+    0 & 0 & \frac{1}{2} & 0 & -\frac{1}{2} & 0 & 0 & 0 \\[0.8em]
+    0 & -\frac{1}{2} & 0 & \frac{1}{2} & 0 & 0 & 0 & 0 \\[0.8em]
+    0 & 0 & -\frac{1}{2} & 0 & \frac{1}{2} & 0 & 0 & 0 \\[0.8em]
+    0 & 0 & 0 & 0 & 0 & \frac{1}{2} & 0 & -\frac{1}{2} \\[0.8em]
+    -\frac{1}{2} & 0 & 0 & 0 & 0 & 0 & \frac{1}{2} & 0 \\[0.8em]
+    0 & 0 & 0 & 0 & 0 & -\frac{1}{2} & 0 & \frac{1}{2}
+    \end{bmatrix}
+\]
+
+Para el Hessiano geométrico, calculamos los multiplicadores de Lagrange por medio del Teorema 1.
+Consideramos a la matriz de contacto A como la matriz que agrupa las derivadas de las restrcciones. Luego:
+\[
+    A(c)^\top \lambda = \nabla \text{Per}(c)
+\]
+
+Al resolver el sistema, obtenemos el vector columna $\lambda$:
+% matriz A traspuesta * vector lambda = gradiente perímetro
+\[
+    \begin{bmatrix}
+    -1 & 0 & 0 & 0 \\
+    0 & 0 & 0 & -1 \\
+    1 & 0 & 0 & 0 \\
+    0 & -1 & 0 & 0 \\
+    0 & 0 & 1 & 0 \\
+    0 & 1 & 0 & 0 \\
+    0 & 0 & -1 & 0 \\
+    0 & 0 & 0 & 1    
+    \end{bmatrix} \cdot
+    \begin{bmatrix}
+        \lambda_{12} \\
+        \lambda_{23} \\
+        \lambda_{34} \\
+        \lambda_{41}
+    \end{bmatrix} =
+    \begin{bmatrix}
+    -1 \\ -1 \\ 1 \\ -1 \\ 1 \\ 1 \\ -1 \\ 1
+    \end{bmatrix}
+\]
+Para cada $\lambda$ tenemos dos ecuaciones:
+\[
+    \begin{cases}
+        -\lambda_{12} = -1 \\
+        \lambda_{12} = 1
+    \end{cases}
+    \quad
+    \begin{cases}
+        -\lambda_{23} = -1 \\
+        \lambda_{23} = 1
+    \end{cases}
+    \quad
+    \begin{cases}
+        \lambda_{34} = 1 \\
+        -\lambda_{34} = -1 
+    \end{cases}
+    \quad
+    \begin{cases}
+        -\lambda_{41} = -1 \\
+        \lambda_{41} = 1
+    \end{cases}
+\]
+Todas ellas son consistentes, por lo que obtenemos:
+\[
+    \lambda_{12} = \lambda_{23} = \lambda_{34} = \lambda_{41} = 1.
+\]
+Nuestro bloque del Hessiano Geometrico toma la forma:
+\[
+    K_{ij} = - \frac{1}{2} \left( I - u^\top_{ij} u_{ij} \right).
+\]
+Como en este caso $u_{ij}$ y $t_{uv}$ coinciden, los bloques son iguales a los del Hessiano Euclidiano pero con signo negativo:
+\[
+    K_{12} = -\frac{1}{2} \begin{bmatrix} 0 & 0 \\ 0 & 1 \end{bmatrix}, \quad
+    K_{23} = -\frac{1}{2} \begin{bmatrix} 1 & 0 \\ 0 & 0 \end{bmatrix}, \quad
+    K_{34} = -\frac{1}{2} \begin{bmatrix} 0 & 0 \\ 0 & 1 \end{bmatrix}, \quad
+    K_{41} = -\frac{1}{2} \begin{bmatrix} 1 & 0 \\ 0 & 0 \end{bmatrix}.
+\]
+Apilando los bloques, obtenemos el Hessiano Geométrico completo:
+\[
+    \mathcal{H}_{\mathrm{geom}} = \begin{bmatrix}
+    -\frac{1}{2} & 0 & 0 & 0 & 0 & 0 & \frac{1}{2} & 0 \\[0.8em]
+    0 & -\frac{1}{2} & 0 & \frac{1}{2} & 0 & 0 & 0 & 0 \\[0.8em]
+    0 & 0 & -\frac{1}{2} & 0 & \frac{1}{2} & 0 & 0 & 0 \\[0.8em]
+    0 & \frac{1}{2} & 0 & -\frac{1}{2} & 0 & 0 & 0 & 0 \\[0.8em]
+    0 & 0 & \frac{1}{2} & 0 & -\frac{1}{2} & 0 & 0 & 0 \\[0.8em]
+    0 & 0 & 0 & 0 & 0 & -\frac{1}{2} & 0 & \frac{1}{2} \\[0.8em]
+    \frac{1}{2} & 0 & 0 & 0 & 0 & 0 & -\frac{1}{2} & 0 \\[0.8em]
+    0 & 0 & 0 & 0 & 0 & \frac{1}{2} & 0 & -\frac{1}{2}
+    \end{bmatrix}
+\]
+
+A continuación calculamos el Hessiano Total sumando ambos términos. Como los bloques son iguales pero con signo contrario, el Hessiano Total es la matriz nula de $8 \times 8$:
+\[
+    \mathcal{H}_{\mathrm{total}} = \mathcal{H}_{eucl} + \mathcal{H}_{\mathrm{geom}} =
+        \begin{bmatrix}
+        \; 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \; \\[0.4em]
+        \; 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \; \\[0.4em]
+        \; 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \; \\[0.4em]
+        \; 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \; \\[0.4em]
+        \; 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \; \\[0.4em]
+        \; 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \; \\[0.4em]
+        \; 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \; \\[0.4em]
+        \; 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \; \\[0.4em]
+        \end{bmatrix}
+\]
+Para restringir a $\text{Roll}(c)$ consideramos una base $Z$:
+\[
+    Z = 
+    \begin{bmatrix}
+    \; 1 & 0 & 0 & 0 \; \\[0.4em]
+    \; 0 & 0 & 0 & 1 \; \\[0.4em]
+    \; 1 & 0 & 0 & 0 \; \\[0.4em]
+    \; 0 & 1 & 0 & 0 \; \\[0.4em]
+    \; 0 & 0 & 1 & 0 \; \\[0.4em]
+    \; 0 & 1 & 0 & 0 \; \\[0.4em]
+    \; 0 & 0 & 1 & 0 \; \\[0.4em]
+    \; 0 & 0 & 0 & 1 \; \\[0.4em]
+    \end{bmatrix}
+\]
+
+Al realizar la operación:
+
+
+obtenemos nuevamente la matriz nula pero con la dimensión reducida ($4 \times 4$):
+\[
+    \mathcal{H}_{\mathrm{intr}} = Z^\top_{4 \times 8} \cdot \mathcal{H}_{\mathrm{total}_{8 \times 8}} \cdot Z_{8 \times 4} = 
+    \begin{bmatrix}
+    \; 0 & 0 & 0 & 0 \; \\[0.4em]
+    \; 0 & 0 & 0 & 0 \; \\[0.4em]
+    \; 0 & 0 & 0 & 0 \; \\[0.4em]
+    \; 0 & 0 & 0 & 0 \; \\[0.4em]
+    \end{bmatrix}
+\]
+El Hessiano intrínseco es la matriz nula de dimensión $4 \times 4$. Esto implica que tiene 4 autovalores 0,
+lo que indica que la configuración cuadrada es un punto crítico con múltiples direcciones planas.
+
+\[
+    \boxed{
+    \text{Autovalores de } \mathcal{H}_{\mathrm{intr}}: \quad 0, 0, 0, 0
+    }   
+\]
+
+3 de estos autovalores corresponden a las simetrías de traslación y rotación, mientras que el cuarto
+indica una dirección plana adicional, que corresponde a una familia de rombos con el mismo perímetro.
+
+\section{Rombo}
+
+Consideramos una configuración de 4 discos que forman un rombo.
+\[
+    c = {(0,0), (2,0), (3,\sqrt{3}), (1,\sqrt{3})}
+\]
+\[
+    E = {(1,2), (2,3), (3,4), (4,1), (4,2)}
+\]
+\[
+    \mathcal{B} = {(1,2), (2,3), (3,4), (4,1)}
+\]
+
+% Dibujo de la configuración rombo
+\begin{center}
+    \begin{tikzpicture}[scale=1]
+        % Discos
+        \draw[] (0,0) circle (1);
+        \draw[] (2,0) circle (1);
+        \draw[] (3,{sqrt(3)}) circle (1);
+        \draw[] (1,{sqrt(3)}) circle (1);
+        
+        % Centros
+        \filldraw[black] (0,0) circle (2pt) node[anchor=north east] {$c_1$};
+        \filldraw[black] (2,0) circle (2pt) node[anchor=north west] {$c_2$};
+        \filldraw[black] (3,{sqrt(3)}) circle (2pt) node[anchor=south] {$c_3$};
+        \filldraw[black] (1,{sqrt(3)}) circle (2pt) node[anchor=north] {$c_4$};
+        
+        % Contactos
+        \draw[thick] (0,0) -- (2,0);
+        \draw[thick] (2,0) -- (3,{sqrt(3)});
+        \draw[thick] (3,{sqrt(3)}) -- (1,{sqrt(3)});
+        \draw[thick] (1,{sqrt(3)}) -- (0,0);
+        \draw[thick, dashed] (1,{sqrt(3)}) -- (2,0); % Contacto adicional
+    \end{tikzpicture}
+\end{center}
+
+Calculamos explicitamente los vectores unitarios de los contactos:
+
+\[
+    u_{12} = \frac{c_2 - c_1}{||c_2 - c_1||} = (1, 0), \quad
+    u_{23} = \frac{c_3 - c_2}{||c_3 - c_2||} = \left(\frac{1}{2}, \frac{\sqrt{3}}{2}\right), \quad
+    u_{34} = \frac{c_4 - c_3}{||c_4 - c_3||} = (-1, 0),
+\]
+\[
+    u_{14} = \frac{c_4 - c_1}{||c_4 - c_1||} = \left(\frac{1}{2}, \frac{\sqrt{3}}{2}\right), \quad
+    u_{24} = \frac{c_4 - c_2}{||c_4 - c_2||} = \left(-\frac{1}{2}, \frac{\sqrt{3}}{2}\right).
+\]
+
+Y de las aristas:
+\[
+    t_{12} = (1, 0), \quad
+    t_{23} = \left(\frac{1}{2}, \frac{\sqrt{3}}{2}\right), \quad
+    t_{34} = (-1, 0), \quad
+    t_{41} = \left(-\frac{1}{2}, -\frac{\sqrt{3}}{2}\right).
+\]
+
+Entonces tenemos:
+
+\begin{center}
+    \begin{tabular}{ccc}
+    \hline
+    \textbf{Vector Unitario $u_{ij}$} & \textbf{Vector Unitario $t_{uv}$} \\
+    \hline
+    $u_{12} = (1, 0)$  & $t_{12} = (1, 0)$ \\
+    $u_{23} = \left(\frac{1}{2}, \frac{\sqrt{3}}{2}\right)$  & $t_{23} = \left(\frac{1}{2}, \frac{\sqrt{3}}{2}\right)$\\
+    $u_{34} = (-1, 0)$ & $t_{34} = (-1, 0)$\\
+    $u_{14} = \left(\frac{1}{2}, \frac{\sqrt{3}}{2}\right)$ & $t_{41} = \left(-\frac{1}{2}, -\frac{\sqrt{3}}{2}\right)$\\
+    $u_{24} = \left(-\frac{1}{2}, \frac{\sqrt{3}}{2}\right)$ & $\notin \mathcal{B}$\\
+    \hline
+    \end{tabular}
+\end{center}
+
+Denotando cada restricción de contacto como $h_{ij}$, la matriz de contacto $A(c)$ se construye como:
+\[
+    A(c) = \begin{array}{c|cccccccc}
+        & c_{1x} & c_{1y} & c_{2x} & c_{2y} & c_{3x} & c_{3y} & c_{4x} & c_{4y} \\
+        \hline
+        h_{12} & -1 & 0 & 1 & 0 & 0 & 0 & 0 & 0 \\[0.8em]
+        h_{23} & 0 & 0 & -\frac{1}{2} & -\frac{\sqrt{3}}{2} & \frac{1}{2} & \frac{\sqrt{3}}{2} & 0 & 0 \\[0.8em]
+        h_{34} & 0 & 0 & 0 & 0 & 1 & 0 & -1 & 0 \\[0.8em]
+        h_{41} & -\frac{1}{2} & -\frac{\sqrt{3}}{2} & 0 & 0 & 0 & 0 & \frac{1}{2} & \frac{\sqrt{3}}{2} \\[0.8em]
+        h_{24} & 0 & 0 & -\left(-\frac{1}{2}\right) & -\frac{\sqrt{3}}{2} & 0 & 0 & -\frac{1}{2} & \frac{\sqrt{3}}{2} \\[0.8em]
+    \end{array}
+\]
+
+Calculamos el gradiente con los vectores $t$:
+\[
+    \nabla_{c_1} \text{Per} = t_{in} - t_{out} = t_{41} - t_{12} = \left(-\frac{1}{2}, -\frac{\sqrt{3}}{2}\right) - (1, 0) = \left(-\frac{3}{2}, -\frac{\sqrt{3}}{2}\right), \quad
+\]
+\[
+    \nabla_{c_2} \text{Per} = t_{in} - t_{out} = t_{12} - t_{23} = (1, 0) - \left(\frac{1}{2}, \frac{\sqrt{3}}{2}\right) = \left(\frac{1}{2}, -\frac{\sqrt{3}}{2}\right),
+\]
+
+\[
+    \nabla_{c_3} \text{Per} = t_{in} - t_{out} = t_{23} - t_{34} = \left(\frac{1}{2}, \frac{\sqrt{3}}{2}\right) - (-1, 0) = \left(\frac{3}{2}, \frac{\sqrt{3}}{2}\right), \quad
+\]
+\[
+    \nabla_{c_4} \text{Per} = t_{in} - t_{out} = t_{34} - t_{41} = (-1, 0) - \left(-\frac{1}{2}, -\frac{\sqrt{3}}{2}\right) = \left(-\frac{1}{2}, \frac{\sqrt{3}}{2}\right).
+\]
+
+Por lo tanto, $\nabla \text{Per}(c)^\top$ es:
+\[
+    \nabla \text{Per}(c)^\top = \begin{bmatrix}
+    -\frac{3}{2} & -\frac{\sqrt{3}}{2} & \frac{1}{2} & -\frac{\sqrt{3}}{2} & \frac{3}{2} & \frac{\sqrt{3}}{2} & -\frac{1}{2} & \frac{\sqrt{3}}{2}
+    \end{bmatrix}
+\]
+
+Usamos una base de Roll(c):
+\[
+    Z = 
+    \begin{bmatrix}
+    \; \frac{\sqrt{3}}{2}  & 1 & -\frac{\sqrt{3}}{2}  \; \\[0.4em]
+    \; -\frac{1}{2}        & 0 & \frac{3}{2}          \; \\[0.4em]
+    \; \frac{\sqrt{3}}{2}  & 1 & -\frac{\sqrt{3}}{2}   \; \\[0.4em]
+    \; \frac{1}{2}         & 0 & \frac{1}{2}          \; \\[0.4em]
+    \; 0         & 1 & 0                    \; \\[0.4em]
+    \; 1         & 0 & 0                    \; \\[0.4em]
+    \; 0         & 1 & 0                    \; \\[0.4em]
+    \; 0         & 0 & 1                    \; \\[0.4em]
+    \end{bmatrix}
+\]
+
+Luego, al hacer $Z^\top \nabla \text{Per}(c)$, obtenemos:
+\[
+    \begin{bmatrix}
+        \; \frac{\sqrt{3}}{2} & -\frac{1}{2} & \frac{\sqrt{3}}{2} & \frac{1}{2} & 0 & 1 & 0 & 0 \; \\[0.4em]
+        \; 1         & 0 & 1 & 0 & 1 & 0 & 1 & 0 \; \\[0.4em]
+        \; -\frac{\sqrt{3}}{2} & \frac{3}{2} & -\frac{\sqrt{3}}{2} & \frac{1}{2} & 0 & 0 & 0 & 1 \; \\[0.4em]
+    \end{bmatrix} \cdot
+    \begin{bmatrix}
+        -\frac{3}{2} \\[0.4em]
+        -\frac{\sqrt{3}}{2} \\[0.4em]
+        \frac{1}{2} \\[0.4em]
+        -\frac{\sqrt{3}}{2} \\[0.4em]
+        \frac{3}{2} \\[0.4em]
+        \frac{\sqrt{3}}{2} \\[0.4em]
+        -\frac{1}{2} \\[0.4em]
+        \frac{\sqrt{3}}{2}
+    \end{bmatrix} = 
+    \begin{bmatrix}
+        0 \\[0.4em]
+        0 \\[0.4em]
+        0
+    \end{bmatrix}
+\] 
+
+Se verifica entonces que el rombo es crítico.
+
+Calculamos cada bloque del Hessiano Euclidiano usando la ecuación:
+\[
+    M_{ij} = \frac{1}{||c_j - c_i||} \left( I - t^\top_{ij} t_{ij} \right).
+\]
+Así:
+\[
+    M_{12} = \frac{1}{2} \left( 
+        \begin{bmatrix} 1 & 0 \\ 0 & 1 \end{bmatrix} 
+        - \begin{bmatrix} 1 \\ 0 \end{bmatrix} 
+        \begin{bmatrix} 1 & 0 \end{bmatrix} \right) = \frac{1}{2} \begin{bmatrix} 0 & 0 \\ 0 & 1 \end{bmatrix}
+        = \begin{bmatrix} 0 & 0 \\ 0 & \frac{1}{2} \end{bmatrix}
+\]
+\[
+    M_{23} = \frac{1}{2} \left( 
+        \begin{bmatrix} 1 & 0 \\ 0 & 1 \end{bmatrix} 
+        - \begin{bmatrix} \frac{1}{2} \\ \frac{\sqrt{3}}{2} \end{bmatrix} 
+        \begin{bmatrix} \frac{1}{2} & \frac{\sqrt{3}}{2} \end{bmatrix} \right) 
+        = \frac{1}{2} \begin{bmatrix} 1 - \frac{1}{4} & -\frac{\sqrt{3}}{4} \\ -\frac{\sqrt{3}}{4} & 1 - \frac{3}{4} \end{bmatrix}
+        = \frac{1}{2} \begin{bmatrix} \frac{3}{4} & -\frac{\sqrt{3}}{4} \\ -\frac{\sqrt{3}}{4} & \frac{1}{4} \end{bmatrix}
+        = \begin{bmatrix} \frac{3}{8} & -\frac{\sqrt{3}}{8} \\ -\frac{\sqrt{3}}{8} & \frac{1}{8} \end{bmatrix}
+\]
+\[
+    M_{34} = \frac{1}{2} \left( 
+        \begin{bmatrix} 1 & 0 \\ 0 & 1 \end{bmatrix} 
+        - \begin{bmatrix} -1 \\ 0 \end{bmatrix} 
+        \begin{bmatrix} -1 & 0 \end{bmatrix} \right) = \frac{1}{2} \begin{bmatrix} 0 & 0 \\ 0 & 1 \end{bmatrix}
+        = \begin{bmatrix} 0 & 0 \\ 0 & \frac{1}{2} \end{bmatrix}
+\]
+\[
+    M_{41} = \frac{1}{2} \left( 
+        \begin{bmatrix} 1 & 0 \\ 0 & 1 \end{bmatrix} 
+        - \begin{bmatrix} -\frac{1}{2} \\ -\frac{\sqrt{3}}{2} \end{bmatrix} 
+        \begin{bmatrix} -\frac{1}{2} & -\frac{\sqrt{3}}{2} \end{bmatrix} \right) 
+        = \frac{1}{2} \begin{bmatrix} 1 - \frac{1}{4} & -\frac{\sqrt{3}}{4} \\ -\frac{\sqrt{3}}{4} & 1 - \frac{3}{4} \end{bmatrix}
+        = \frac{1}{2} \begin{bmatrix} \frac{3}{4} & -\frac{\sqrt{3}}{4} \\ -\frac{\sqrt{3}}{4} & \frac{1}{4} \end{bmatrix}
+        = \begin{bmatrix} \frac{3}{8} & -\frac{\sqrt{3}}{8} \\ -\frac{\sqrt{3}}{8} & \frac{1}{8} \end{bmatrix}
+\]
+
+Por lo tanto:
+
+\[
+    M_{12} = \begin{bmatrix} 0 & 0 \\ 0 & \frac{1}{2}  \end{bmatrix}, \quad
+    M_{23} = \begin{bmatrix} \frac{3}{8} & -\frac{\sqrt{3}}{8} \\ -\frac{\sqrt{3}}{8} & \frac{1}{8} \end{bmatrix}, \quad
+    M_{34} = \begin{bmatrix} 0 & 0 \\ 0 & \frac{1}{2}  \end{bmatrix}, \quad
+    M_{41} = \begin{bmatrix} \frac{3}{8} & -\frac{\sqrt{3}}{8} \\ -\frac{\sqrt{3}}{8} & \frac{1}{8} \end{bmatrix}.
+\]
+
+Ensamblando, obtenemos la forma:
+\renewcommand{\arraystretch}{1.5}
+\[
+    \mathcal{H}_{eucl} = 
+    \left[
+    \begin{array}{c|c|c|c}
+        \underbrace{M_{12} + M_{41}}_{\text{Disco } 1} & -M_{12} & 0 & -M_{41} \\ \hline
+        -M_{12} & \underbrace{M_{12} + M_{23}}_{\text{Disco } 2} & -M_{23} & 0 \\ \hline
+        0 & -M_{23} & \underbrace{M_{23} + M_{34}}_{\text{Disco } 3} & -M_{34} \\ \hline
+        -M_{41} & 0 & -M_{34} & \underbrace{M_{34} + M_{41}}_{\text{Disco } 4}
+    \end{array}
+    \right]
+\]
+\renewcommand{\arraystretch}{1}
+
+Sustituyendo cada bloque, obtenemos el Hessiano euclidiano:
+\[
+    \mathcal{H}_{eucl} = \begin{bmatrix}
+    \frac{3}{8} & -\frac{\sqrt{3}}{8} & 0 & 0 & 0 & 0 & -\frac{3}{8} & \frac{\sqrt{3}}{8} \\[0.8em]
+    -\frac{\sqrt{3}}{8} & \frac{5}{8} & 0 & -\frac{1}{2} & 0 & 0 & \frac{\sqrt{3}}{8} & -\frac{1}{8} \\[0.8em]
+    0 & 0 & \frac{3}{8} & -\frac{\sqrt{3}}{8} & -\frac{3}{8} & \frac{\sqrt{3}}{8} & 0 & 0 \\[0.8em]
+    0 & -\frac{1}{2} & -\frac{\sqrt{3}}{8} & \frac{5}{8} & \frac{\sqrt{3}}{8} & -\frac{1}{8} & 0 & 0 \\[0.8em]
+    0 & 0 & -\frac{3}{8} & \frac{\sqrt{3}}{8} & \frac{3}{8} & -\frac{\sqrt{3}}{8} & 0 & 0 \\[0.8em]
+    0 & 0 & \frac{\sqrt{3}}{8} & -\frac{1}{8} & -\frac{\sqrt{3}}{8} & \frac{5}{8} & 0 & -\frac{1}{2} \\[0.8em]
+    -\frac{3}{8} & \frac{\sqrt{3}}{8} & 0 & 0 & 0 & 0 & \frac{3}{8} & -\frac{\sqrt{3}}{8} \\[0.8em]
+    \frac{\sqrt{3}}{8} & -\frac{1}{8} & 0 & 0 & 0 & -\frac{1}{2} & -\frac{\sqrt{3}}{8} & \frac{5}{8}
+    \end{bmatrix}
+\]
+
+Los bloques del Hessiano Geométrico por otra parte:
+\[
+    K_{ij} = - \frac{\lambda_{ij}}{2} \left( I - u^\top_{ij} u_{ij} \right).
+\]
+Calculamos los multiplicadores de Lagrange como antes:
+\[
+    A(c)^\top \lambda = \nabla \text{Per}(c)
+\]
+
+\[
+\begin{bmatrix}
+    -1 & 0 & 0 & -\frac{1}{2} & 0 \\[0.4em]
+    0 & 0 & 0 & -\frac{\sqrt{3}}{2} & 0 \\[0.4em]
+    1 & -\frac{1}{2} & 0 & 0 & \frac{1}{2} \\[0.4em]
+    0 & -\frac{\sqrt{3}}{2} & 0 & 0 & -\frac{\sqrt{3}}{2} \\[0.4em]
+    0 & \frac{1}{2} & 1 & 0 & 0 \\[0.4em]
+    0 & \frac{\sqrt{3}}{2} & 0 & 0 & 0 \\[0.4em]
+    0 & 0 & -1 & \frac{1}{2} & -\frac{1}{2} \\[0.4em]
+    0 & 0 & 0 & \frac{\sqrt{3}}{2} & \frac{\sqrt{3}}{2}
+\end{bmatrix} \cdot
+\begin{bmatrix}
+    \lambda_{12} \\
+    \lambda_{23} \\
+    \lambda_{34} \\
+    \lambda_{41} \\
+    \lambda_{24}
+\end{bmatrix} =
+\begin{bmatrix}
+    -\frac{3}{2} \\[0.4em]
+    -\frac{\sqrt{3}}{2} \\[0.4em]
+    \frac{1}{2} \\[0.4em]
+    -\frac{\sqrt{3}}{2} \\[0.4em]
+    \frac{3}{2} \\[0.4em]
+    \frac{\sqrt{3}}{2} \\[0.4em]
+    -\frac{1}{2} \\[0.4em]
+    \frac{\sqrt{3}}{2}
+\end{bmatrix}
+\]
+
+Resolviendo el sistema, el vector solución es:
+\[
+    \lambda = \begin{bmatrix}
+    1 \\
+    1 \\
+    1 \\
+    1 \\
+    0
+    \end{bmatrix}
+\]
+
+Así:
+\[
+    K_{12} = -\frac{1}{2} \left( 
+        \begin{bmatrix} 1 & 0 \\ 0 & 1 \end{bmatrix} 
+        - \begin{bmatrix} 1 \\ 0 \end{bmatrix} 
+        \begin{bmatrix} 1 & 0 \end{bmatrix} \right) = -\frac{1}{2} \begin{bmatrix} 0 & 0 \\ 0 & 1 \end{bmatrix},
+\]
+\[
+    K_{23} = -\frac{1}{2} \left( 
+        \begin{bmatrix} 1 & 0 \\ 0 & 1 \end{bmatrix} 
+        - \begin{bmatrix} \frac{1}{2} \\ \frac{\sqrt{3}}{2} \end{bmatrix} 
+        \begin{bmatrix} \frac{1}{2} & \frac{\sqrt{3}}{2} \end{bmatrix} \right) 
+        = -\frac{1}{2} \begin{bmatrix} \frac{3}{4} & -\frac{\sqrt{3}}{4} \\ -\frac{\sqrt{3}}{4} & \frac{1}{4} \end{bmatrix},
+\]
+\[
+    K_{34} = -\frac{1}{2} \left( 
+        \begin{bmatrix} 1 & 0 \\ 0 & 1 \end{bmatrix} 
+        - \begin{bmatrix} -1 \\ 0 \end{bmatrix} 
+        \begin{bmatrix} -1 & 0 \end{bmatrix} \right) = -\frac{1}{2} \begin{bmatrix} 0 & 0 \\ 0 & 1 \end{bmatrix},
+\]
+\[
+    K_{14} = -\frac{1}{2} \left( 
+        \begin{bmatrix} 1 & 0 \\ 0 & 1 \end{bmatrix} 
+        - \begin{bmatrix} \frac{1}{2} \\ \frac{\sqrt{3}}{2} \end{bmatrix} 
+        \begin{bmatrix} \frac{1}{2} & \frac{\sqrt{3}}{2} \end{bmatrix} \right) 
+        = -\frac{1}{2} \begin{bmatrix} \frac{3}{4} & -\frac{\sqrt{3}}{4} \\ -\frac{\sqrt{3}}{4} & \frac{1}{4} \end{bmatrix}.
+\]
+\[
+    K_{24} = -\frac{0}{2} \left( 
+        \begin{bmatrix} 1 & 0 \\ 0 & 1 \end{bmatrix} 
+        - \begin{bmatrix} -\frac{1}{2} \\ \frac{\sqrt{3}}{2} \end{bmatrix} 
+        \begin{bmatrix} -\frac{1}{2} & \frac{\sqrt{3}}{2} \end{bmatrix} \right) 
+        = \begin{bmatrix} 0 & 0 \\ 0 & 0 \end{bmatrix}.
+\]
+Entonces:
+\[
+    K_{12} = \begin{bmatrix} 0 & 0 \\ 0 & -\frac{1}{2} \end{bmatrix}, \quad
+    K_{23} = \begin{bmatrix} -\frac{3}{8} & \frac{\sqrt{3}}{8} \\ \frac{\sqrt{3}}{8} & -\frac{1}{8} \end{bmatrix}, \quad
+    K_{34} = \begin{bmatrix} 0 & 0 \\ 0 & -\frac{1}{2} \end{bmatrix}, \quad
+    K_{14} = \begin{bmatrix} -\frac{3}{8} & \frac{\sqrt{3}}{8} \\ \frac{\sqrt{3}}{8} & -\frac{1}{8} \end{bmatrix},
+\]
+\[
+    K_{24} = \begin{bmatrix} 0 & 0 \\ 0 & 0 \end{bmatrix}.
+\]
+El Hessiano Geométrico tiene la forma:
+\renewcommand{\arraystretch}{1.5}
+\[
+    \mathcal{H}_{\mathrm{geom}} = 
+    \left[
+    \begin{array}{c|c|c|c}
+        \underbrace{K_{12} + K_{41}}_{\text{Disco } 1} & -K_{12} & 0 & -K_{41} \\ \hline
+        -K_{12} & \underbrace{K_{12} + K_{23}}_{\text{Disco } 2} & -K_{23} & 0 \\ \hline
+        0 & -K_{23} & \underbrace{K_{23} + K_{34}}_{\text{Disco } 3} & -K_{34} \\ \hline
+        -K_{41} & 0 & -K_{34} & \underbrace{K_{34} + K_{41}}_{\text{Disco } 4}
+    \end{array}
+    \right]
+\]
+\renewcommand{\arraystretch}{1}
+Sustituyendo cada bloque, obtenemos el Hessiano geométrico:
+\[
+    \mathcal{H}_{\mathrm{geom}} = \begin{bmatrix}
+        -\frac{3}{8} & \frac{\sqrt{3}}{8} & 0 & 0 & 0 & 0 & \frac{3}{8} & -\frac{\sqrt{3}}{8} \\[0.8em]
+        \frac{\sqrt{3}}{8} & -\frac{5}{8} & 0 & \frac{1}{2} & 0 & 0 & -\frac{\sqrt{3}}{8} & \frac{1}{8} \\[0.8em]
+        0 & 0 & -\frac{3}{8} & \frac{\sqrt{3}}{8} & \frac{3}{8} & -\frac{\sqrt{3}}{8} & 0 & 0 \\[0.8em]
+        0 & \frac{1}{2} & \frac{\sqrt{3}}{8} & -\frac{5}{8} & -\frac{\sqrt{3}}{8} & \frac{1}{8} & 0 & 0 \\[0.8em]
+        0 & 0 & \frac{3}{8} & -\frac{\sqrt{3}}{8} & -\frac{3}{8} & \frac{\sqrt{3}}{8} & 0 & 0 \\[0.8em]
+        0 & 0 & -\frac{\sqrt{3}}{8} & \frac{1}{8} & \frac{\sqrt{3}}{8} & -\frac{5}{8} & 0 & \frac{1}{2} \\[0.8em]
+        \frac{3}{8} & -\frac{\sqrt{3}}{8} & 0 & 0 & 0 & 0 & -\frac{3}{8} & \frac{\sqrt{3}}{8} \\[0.8em]
+        -\frac{\sqrt{3}}{8} & \frac{1}{8} & 0 & 0 & 0 & \frac{1}{2} & \frac{\sqrt{3}}{8} & -\frac{5}{8}
+    \end{bmatrix}
+\]
+
+Sumando ambos Hessianos, obtenemos el Hessiano Total:
+\[
+    \mathcal{H}_{\mathrm{total}} = \mathcal{H}_{eucl} + \mathcal{H}_{\mathrm{geom}} =
+        \begin{bmatrix}
+        \; 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \; \\[0.4em]
+        \; 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \; \\[0.4em]
+        \; 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \; \\[0.4em]
+        \; 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \; \\[0.4em]
+        \; 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \; \\[0.4em]
+        \; 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \; \\[0.4em]
+        \; 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \; \\[0.4em]
+        \; 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \; \\[0.4em]
+        \end{bmatrix}
+\]
+
+Para restringir a $\text{Roll}(c)$ consideramos una base $Z$:
+\[
+    Z = 
+    \begin{bmatrix}
+    \; \frac{\sqrt{3}}{2}  & 1 & -\frac{\sqrt{3}}{2}  \; \\[0.4em]
+    \; -\frac{1}{2}        & 0 & \frac{3}{2}          \; \\[0.4em]
+    \; \frac{\sqrt{3}}{2}  & 1 & -\frac{\sqrt{3}}{2}   \; \\[0.4em]
+    \; \frac{1}{2}         & 0 & \frac{1}{2}          \; \\[0.4em]
+    \; 0         & 1 & 0                    \; \\[0.4em]
+    \; 1         & 0 & 0                    \; \\[0.4em]
+    \; 0         & 1 & 0                    \; \\[0.4em]
+    \; 0         & 0 & 1                    \; \\[0.4em]
+    \end{bmatrix}
+\]
+
+Al realizar la operación obtenemos nuevamente la matriz nula pero con la dimensión reducida ($3 \times 3$):
+
+\[
+    \mathcal{H}_{\mathrm{intr}} = Z^\top_{3 \times 8} \cdot \mathcal{H}_{\mathrm{total}_{8 \times 8}} \cdot Z_{8 \times 3} = 
+    \begin{bmatrix}
+    \; 0 & 0 & 0 \; \\[0.4em]
+    \; 0 & 0 & 0 \; \\[0.4em]
+    \; 0 & 0 & 0 \; \\[0.4em]
+    \end{bmatrix}
+\]
+El Hessiano intrínseco es la matriz nula de dimensión $3 \times 3$. Esto implica que tiene 3 autovalores 0,
+\[
+    \boxed{
+    \text{Autovalores de } \mathcal{H}_{\mathrm{intr}}: \quad 0, 0, 0}
+\]   
+que corresponden a las simetrías de traslación y rotación del sistema.
+
+
+\end{document}  

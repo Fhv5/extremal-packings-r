@@ -1,0 +1,18 @@
+{
+    "version": "1.1",
+    "indexing": "0-based",
+    "angles": "degrees",
+    "radius": "1",
+    "graphs": [
+        {
+            "discos": 3,
+            "centros": [[0,0],[2,0],["1","sqrt(3)"]],
+            "contactos": [[0,1],[1,2],[2,0]]
+        },
+        {
+            "discos": 3,
+            "centros": [[0,0],[2,0],[4,0]],
+            "contactos": [[0,1],[1,2]]
+        }
+    ]
+}
