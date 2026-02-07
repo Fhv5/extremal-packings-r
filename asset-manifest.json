@@ -1,0 +1,13 @@
+{
+  "files": {
+    "main.css": "/extremal-packings-r/static/css/main.197c9b66.css",
+    "main.js": "/extremal-packings-r/static/js/main.d0513b1e.js",
+    "index.html": "/extremal-packings-r/index.html",
+    "main.197c9b66.css.map": "/extremal-packings-r/static/css/main.197c9b66.css.map",
+    "main.d0513b1e.js.map": "/extremal-packings-r/static/js/main.d0513b1e.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.197c9b66.css",
+    "static/js/main.d0513b1e.js"
+  ]
+}
