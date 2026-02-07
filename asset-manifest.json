@@ -1,13 +1,13 @@
 {
   "files": {
-    "main.css": "/extremal-packings-r/static/css/main.197c9b66.css",
-    "main.js": "/extremal-packings-r/static/js/main.d0513b1e.js",
+    "main.css": "/extremal-packings-r/static/css/main.b396dc94.css",
+    "main.js": "/extremal-packings-r/static/js/main.70875930.js",
     "index.html": "/extremal-packings-r/index.html",
-    "main.197c9b66.css.map": "/extremal-packings-r/static/css/main.197c9b66.css.map",
-    "main.d0513b1e.js.map": "/extremal-packings-r/static/js/main.d0513b1e.js.map"
+    "main.b396dc94.css.map": "/extremal-packings-r/static/css/main.b396dc94.css.map",
+    "main.70875930.js.map": "/extremal-packings-r/static/js/main.70875930.js.map"
   },
   "entrypoints": [
-    "static/css/main.197c9b66.css",
-    "static/js/main.d0513b1e.js"
+    "static/css/main.b396dc94.css",
+    "static/js/main.70875930.js"
   ]
 }
