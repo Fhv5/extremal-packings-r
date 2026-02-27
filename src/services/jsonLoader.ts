@@ -11,6 +11,7 @@ import data6 from '../data/6disks.json';
 interface RawGraph {
   discos: number;
   centros: (string | number)[][];
+  centros_optimizados: (string | number)[][];
   contactos: number[][];
 }
 
@@ -48,10 +49,22 @@ function evalCoord(val: string | number): number {
  * Parse a raw graph entry into a Configuration object.
  */
 function parseGraph(raw: RawGraph, radius: number): Configuration {
-  const positions: Point[] = raw.centros.map((c) => [
-    evalCoord(c[0]),
-    evalCoord(c[1]),
-  ]);
+  console.log(raw)
+  // POSICIONES DE CENTROS
+  // If centros_optimizados is present and non-empty, use it instead of centros
+
+  const positions: Point[] = (raw.centros_optimizados && raw.centros_optimizados.length > 0
+    ? raw.centros_optimizados
+    : raw.centros).map((c) => [
+      evalCoord(c[0]),
+      evalCoord(c[1]),
+    ]);
+
+  
+
+  
+
+  
 
   const contacts: Contact[] = raw.contactos.map((e) => [e[0], e[1]]);
 
